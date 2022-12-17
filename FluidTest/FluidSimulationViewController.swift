@@ -36,9 +36,21 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
 
     var device: MTLDevice!
     
+    var timer: CADisplayLink! = nil
+    
     private var indicesBuffer: MTLBuffer!
     
     @IBOutlet weak var metalView: MTKView!
+    
+    let vertexData:[Float] = [1.0, 1.0, 0.0,
+                              -1.0, 1.0, 0.0,
+                              -1.0, -1.0, 0.0,
+                              1.0, 1.0, 0.0,
+                              1.0, -1.0, 0.0,
+                              -1.0, -1.0, 0.0]
+    
+    var vertexBuffer: MTLBuffer! = nil
+    var kernelBuffer: MTLBuffer! = nil
     
     func initializeDevice() {
         // Set up the Metal device
@@ -54,7 +66,10 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
     }
     
     var commandQueue: MTLCommandQueue!
-    var pipelineState: MTLRenderPipelineState!
+    var computePipelineState: MTLComputePipelineState!
+    var renderPipelineState: MTLRenderPipelineState!
+    
+    var computeEncoder: MTLComputeCommandEncoder!
     
     // Data structures and algorithms for the fluid simulation
     // var fluid: FluidSimulation
@@ -62,32 +77,63 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
     // Shaders and rendering pipeline state
     var vertexFunction: MTLFunction?
     var fragmentFunction: MTLFunction?
+    var kernelFunction: MTLFunction?
 
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
+    func createComputePipelineState() {
+        let library = device.makeDefaultLibrary()
+        kernelFunction = (library?.makeFunction(name: "mainImage"))!
         
-        initializeDevice()
-        
+        do {
+            computePipelineState = try device.makeComputePipelineState(function: kernelFunction!)
+        } catch let error as NSError {
+            print("Error: \(error.localizedDescription)")
+        }
+    }
+    
+    func createRenderPipelineState() {
         let library = device.makeDefaultLibrary()
         vertexFunction = (library?.makeFunction(name: "simple_vertex_function"))!
         fragmentFunction = (library?.makeFunction(name: "simple_fragment_function"))!
         
-        guard let vertexFunc = vertexFunction, let fragmentFunc = fragmentFunction else {
-            return nil
-        }
-
         // Set up the pipeline descriptor with the simple shaders
         let pipelineDescriptor = MTLRenderPipelineDescriptor()
-        pipelineDescriptor.vertexFunction = vertexFunc
-        pipelineDescriptor.fragmentFunction = fragmentFunc
+        pipelineDescriptor.vertexFunction = vertexFunction
+        pipelineDescriptor.fragmentFunction = fragmentFunction
         pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
         //pipelineDescriptor.depthAttachmentPixelFormat = .depthStencilPixelFormat
-
+        
+        let dataSize = vertexData.count *
+         MemoryLayout.size(ofValue: vertexData[0])
+        vertexBuffer = device.makeBuffer(bytes: vertexData,
+         length: dataSize,
+         options: .storageModeShared)
         
         do {
-            pipelineState = try device.makeRenderPipelineState(descriptor: pipelineDescriptor)
+            renderPipelineState = try device.makeRenderPipelineState(descriptor: pipelineDescriptor)
         } catch let error as NSError {
             print("Error: \(error.localizedDescription)")
+        }
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        
+        initializeDevice()
+        createRenderPipelineState()
+        createComputePipelineState()
+        
+        
+    }
+    
+    func render()
+    {
+        // We can use this too...
+        print("in render")
+    }
+    
+    @objc func gameloop() {
+        autoreleasepool {
+            self.render()
         }
     }
     
@@ -96,6 +142,14 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
         metalView.device = device
         metalView.delegate = self
         commandQueue = device.makeCommandQueue()
+        // Create a command buffer and use it to create the compute encoder
+        let commandBuffer = commandQueue.makeCommandBuffer()
+        computeEncoder = commandBuffer!.makeComputeCommandEncoder()
+        
+        
+        timer = CADisplayLink(target: self, selector: #selector(self.gameloop))
+        timer.add(to: .current, forMode: .common)
+        
     }
 
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
@@ -103,11 +157,45 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
         // ...
     }
     
+    struct VertexOut {
+        var texCoords: float2
+    }
+    
     func draw(in view: MTKView) {
         
+        let buffer: MTLBuffer
+    
+        let outTextureDescriptor = MTLTextureDescriptor.texture2DDescriptor(
+            pixelFormat: .rgba8Unorm,
+            width: Int(metalView.drawableSize.width),
+            height: Int(metalView.drawableSize.height),
+            mipmapped: false
+        )
+        outTextureDescriptor.usage = [.shaderWrite, .shaderRead]
+        let outTexture = device.makeTexture(descriptor: outTextureDescriptor)
+        let width = outTexture!.width
+        let height = outTexture!.height
+        
+        print("in draw")
         guard let drawable = view.currentDrawable else {
           return
         }
+        
+        kernelBuffer = device.makeBuffer(length: MemoryLayout<VertexOut>.stride * width * height, options: [])
+        
+        let threadsPerThreadgroup = MTLSizeMake(16, 16, 1)
+        let threadgroupsPerGrid = MTLSize(width: (width + threadsPerThreadgroup.width - 1) / threadsPerThreadgroup.width, height: (height + threadsPerThreadgroup.height - 1) / threadsPerThreadgroup.height, depth: 1)
+        
+        // Use compute encoder
+        //computeEncoder.setComputePipelineState(computePipelineState)
+        //computeEncoder.setTexture(outTexture, index: 0)
+        //computeEncoder.setBuffer(kernelBuffer, offset: 0, index: 1)
+        //computeEncoder.setTexture(iChannel0, index: 0)
+        //computeEncoder.setTexture(iChannel1, index: 0)
+        
+        //computeEncoder.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
+        // End encoding
+        //computeEncoder.endEncoding()
         
         // Create a render pass descriptor to describe the render pass
         let renderPassDescriptor = MTLRenderPassDescriptor()
@@ -123,7 +211,13 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
         guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else { return }
 
         // Set the render pipeline state and the viewport
-        renderEncoder.setRenderPipelineState(pipelineState)
+        renderEncoder.setRenderPipelineState(renderPipelineState)
+        
+        renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
+  
+        
+        
+        renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 6)
         
         renderEncoder.setViewport(MTLViewport(originX: 0.0, originY: 0.0, width: Double(view.bounds.width), height: Double(view.bounds.height), znear: 0.0, zfar: 1.0))
         

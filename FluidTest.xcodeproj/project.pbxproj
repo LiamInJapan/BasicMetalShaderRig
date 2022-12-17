@@ -9,23 +9,23 @@
 /* Begin PBXBuildFile section */
 		0C3753C1294C39770084C307 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3753C0294C39770084C307 /* AppDelegate.swift */; };
 		0C3753C3294C39770084C307 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3753C2294C39770084C307 /* SceneDelegate.swift */; };
-		0C3753C5294C39770084C307 /* FluidSimulationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3753C4294C39770084C307 /* FluidSimulationViewController.swift */; };
 		0C3753C8294C39770084C307 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0C3753C6294C39770084C307 /* Main.storyboard */; };
 		0C3753CA294C39790084C307 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0C3753C9294C39790084C307 /* Assets.xcassets */; };
 		0C3753CD294C39790084C307 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0C3753CB294C39790084C307 /* LaunchScreen.storyboard */; };
 		0C3753D5294C472A0084C307 /* TestShader.metal in Sources */ = {isa = PBXBuildFile; fileRef = 0C3753D4294C472A0084C307 /* TestShader.metal */; };
+		0C75DEB4294E041E0053D5BE /* FluidSimulationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C75DEB3294E041E0053D5BE /* FluidSimulationViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0C3753BD294C39770084C307 /* FluidTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FluidTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C3753C0294C39770084C307 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0C3753C2294C39770084C307 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		0C3753C4294C39770084C307 /* FluidSimulationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FluidSimulationViewController.swift; sourceTree = "<group>"; };
 		0C3753C7294C39770084C307 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		0C3753C9294C39790084C307 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0C3753CC294C39790084C307 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		0C3753CE294C39790084C307 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C3753D4294C472A0084C307 /* TestShader.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = TestShader.metal; sourceTree = "<group>"; };
+		0C75DEB3294E041E0053D5BE /* FluidSimulationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FluidSimulationViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,9 +58,9 @@
 		0C3753BF294C39770084C307 /* FluidTest */ = {
 			isa = PBXGroup;
 			children = (
+				0C75DEB3294E041E0053D5BE /* FluidSimulationViewController.swift */,
 				0C3753C0294C39770084C307 /* AppDelegate.swift */,
 				0C3753C2294C39770084C307 /* SceneDelegate.swift */,
-				0C3753C4294C39770084C307 /* FluidSimulationViewController.swift */,
 				0C3753C6294C39770084C307 /* Main.storyboard */,
 				0C3753C9294C39790084C307 /* Assets.xcassets */,
 				0C3753CB294C39790084C307 /* LaunchScreen.storyboard */,
@@ -142,8 +142,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				0C3753D5294C472A0084C307 /* TestShader.metal in Sources */,
-				0C3753C5294C39770084C307 /* FluidSimulationViewController.swift in Sources */,
 				0C3753C1294C39770084C307 /* AppDelegate.swift in Sources */,
+				0C75DEB4294E041E0053D5BE /* FluidSimulationViewController.swift in Sources */,
 				0C3753C3294C39770084C307 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
