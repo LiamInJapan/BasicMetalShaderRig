@@ -15,7 +15,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     </mtkView>
                     <connections>
-                        <outlet property="metalView" destination="ch1-DQ-uCQ" id="PAh-T7-mIM"/>
+                        <outlet property="metalView" destination="ch1-DQ-uCQ" id="gro-hy-k50"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

@@ -120,15 +120,12 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
         
         initializeDevice()
         createRenderPipelineState()
-        createComputePipelineState()
-        
-        
+        //createComputePipelineState()
     }
     
     func render()
     {
         // We can use this too...
-        print("in render")
     }
     
     @objc func gameloop() {
@@ -144,7 +141,7 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
         commandQueue = device.makeCommandQueue()
         // Create a command buffer and use it to create the compute encoder
         let commandBuffer = commandQueue.makeCommandBuffer()
-        computeEncoder = commandBuffer!.makeComputeCommandEncoder()
+        //computeEncoder = commandBuffer!.makeComputeCommandEncoder()
         
         
         timer = CADisplayLink(target: self, selector: #selector(self.gameloop))
@@ -163,9 +160,7 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
     
     func draw(in view: MTKView) {
         
-        let buffer: MTLBuffer
-    
-        let outTextureDescriptor = MTLTextureDescriptor.texture2DDescriptor(
+        /*let outTextureDescriptor = MTLTextureDescriptor.texture2DDescriptor(
             pixelFormat: .rgba8Unorm,
             width: Int(metalView.drawableSize.width),
             height: Int(metalView.drawableSize.height),
@@ -174,17 +169,16 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
         outTextureDescriptor.usage = [.shaderWrite, .shaderRead]
         let outTexture = device.makeTexture(descriptor: outTextureDescriptor)
         let width = outTexture!.width
-        let height = outTexture!.height
+        let height = outTexture!.height*/
         
-        print("in draw")
         guard let drawable = view.currentDrawable else {
           return
         }
         
-        kernelBuffer = device.makeBuffer(length: MemoryLayout<VertexOut>.stride * width * height, options: [])
+        //kernelBuffer = device.makeBuffer(length: MemoryLayout<VertexOut>.stride * width * height, options: [])
         
-        let threadsPerThreadgroup = MTLSizeMake(16, 16, 1)
-        let threadgroupsPerGrid = MTLSize(width: (width + threadsPerThreadgroup.width - 1) / threadsPerThreadgroup.width, height: (height + threadsPerThreadgroup.height - 1) / threadsPerThreadgroup.height, depth: 1)
+        //let threadsPerThreadgroup = MTLSizeMake(16, 16, 1)
+        //let threadgroupsPerGrid = MTLSize(width: (width + threadsPerThreadgroup.width - 1) / threadsPerThreadgroup.width, height: (height + threadsPerThreadgroup.height - 1) / threadsPerThreadgroup.height, depth: 1)
         
         // Use compute encoder
         //computeEncoder.setComputePipelineState(computePipelineState)
@@ -215,8 +209,6 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
         
         renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
   
-        
-        
         renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 6)
         
         renderEncoder.setViewport(MTLViewport(originX: 0.0, originY: 0.0, width: Double(view.bounds.width), height: Double(view.bounds.height), znear: 0.0, zfar: 1.0))
