@@ -38,7 +38,7 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
     
     var timer: CADisplayLink! = nil
     
-    private var indicesBuffer: MTLBuffer!
+    //private var indicesBuffer: MTLBuffer!
     
     @IBOutlet weak var metalView: MTKView!
     
@@ -50,7 +50,7 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
                               -1.0, -1.0, 0.0]
     
     var vertexBuffer: MTLBuffer! = nil
-    var kernelBuffer: MTLBuffer! = nil
+    //var kernelBuffer: MTLBuffer! = nil
     
     func initializeDevice() {
         // Set up the Metal device
@@ -66,10 +66,10 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
     }
     
     var commandQueue: MTLCommandQueue!
-    var computePipelineState: MTLComputePipelineState!
+    //var computePipelineState: MTLComputePipelineState!
     var renderPipelineState: MTLRenderPipelineState!
     
-    var computeEncoder: MTLComputeCommandEncoder!
+    //var computeEncoder: MTLComputeCommandEncoder!
     
     // Data structures and algorithms for the fluid simulation
     // var fluid: FluidSimulation
@@ -77,9 +77,9 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
     // Shaders and rendering pipeline state
     var vertexFunction: MTLFunction?
     var fragmentFunction: MTLFunction?
-    var kernelFunction: MTLFunction?
+    //var kernelFunction: MTLFunction?
 
-    func createComputePipelineState() {
+    /*func createComputePipelineState() {
         let library = device.makeDefaultLibrary()
         kernelFunction = (library?.makeFunction(name: "mainImage"))!
         
@@ -88,12 +88,12 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
         } catch let error as NSError {
             print("Error: \(error.localizedDescription)")
         }
-    }
+    }*/
     
     func createRenderPipelineState() {
         let library = device.makeDefaultLibrary()
-        vertexFunction = (library?.makeFunction(name: "simple_vertex_function"))!
-        fragmentFunction = (library?.makeFunction(name: "simple_fragment_function"))!
+        vertexFunction = (library?.makeFunction(name: "basic_vertex"))!
+        fragmentFunction = (library?.makeFunction(name: "basic_fragment"))!
         
         // Set up the pipeline descriptor with the simple shaders
         let pipelineDescriptor = MTLRenderPipelineDescriptor()
@@ -101,12 +101,6 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
         pipelineDescriptor.fragmentFunction = fragmentFunction
         pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
         //pipelineDescriptor.depthAttachmentPixelFormat = .depthStencilPixelFormat
-        
-        let dataSize = vertexData.count *
-         MemoryLayout.size(ofValue: vertexData[0])
-        vertexBuffer = device.makeBuffer(bytes: vertexData,
-         length: dataSize,
-         options: .storageModeShared)
         
         do {
             renderPipelineState = try device.makeRenderPipelineState(descriptor: pipelineDescriptor)
@@ -118,9 +112,7 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         
-        initializeDevice()
-        createRenderPipelineState()
-        //createComputePipelineState()
+        
     }
     
     func render()
@@ -136,17 +128,23 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        initializeDevice()
+        createRenderPipelineState()
+        //createComputePipelineState()
         metalView.device = device
         metalView.delegate = self
+        metalView.colorPixelFormat = .bgra8Unorm
+        
+        let vertexDataSize = vertexData.count * MemoryLayout<Float>.size
+        vertexBuffer = device.makeBuffer(bytes: vertexData, length: vertexDataSize, options:[])
+        
         commandQueue = device.makeCommandQueue()
         // Create a command buffer and use it to create the compute encoder
-        let commandBuffer = commandQueue.makeCommandBuffer()
+        //let commandBuffer = commandQueue.makeCommandBuffer()
         //computeEncoder = commandBuffer!.makeComputeCommandEncoder()
-        
         
         timer = CADisplayLink(target: self, selector: #selector(self.gameloop))
         timer.add(to: .current, forMode: .common)
-        
     }
 
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
@@ -154,9 +152,9 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
         // ...
     }
     
-    struct VertexOut {
+    /*struct VertexOut {
         var texCoords: float2
-    }
+    }*/
     
     func draw(in view: MTKView) {
         
@@ -198,21 +196,16 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
         renderPassDescriptor.colorAttachments[0]
           .clearColor = MTLClearColor(red: 0.85, green: 0.85, blue: 0.85, alpha: 1.0)
         
-        // Create a command buffer to hold the rendering commands
         guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }
-        
-        // Create a render command encoder to encode the rendering commands
         guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else { return }
-
-        // Set the render pipeline state and the viewport
         renderEncoder.setRenderPipelineState(renderPipelineState)
-        
-        renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
-  
-        renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 6)
         
         renderEncoder.setViewport(MTLViewport(originX: 0.0, originY: 0.0, width: Double(view.bounds.width), height: Double(view.bounds.height), znear: 0.0, zfar: 1.0))
         
+        
+        
+        renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
+        renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 6)
         
         // End the render command encoder
         renderEncoder.endEncoding()
@@ -220,5 +213,7 @@ class FluidSimulationViewController: UIViewController, MTKViewDelegate {
         // Schedule the command buffer for execution
         commandBuffer.present(drawable)
         commandBuffer.commit()
+        
+        
     }
 }

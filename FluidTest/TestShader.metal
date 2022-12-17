@@ -8,7 +8,19 @@
 #include <metal_stdlib>
 using namespace metal;
 
-struct VertexOut {
+// Simple vertex shader
+vertex float4 basic_vertex(
+ const device packed_float3* vertex_array [[ buffer(0) ]],
+ unsigned int vid [[ vertex_id ]]) {
+     return float4(vertex_array[vid], 1.0);
+ }
+
+// Simple fragment shader
+fragment float4 basic_fragment() {
+    return float4(1.0, 1.0, 0.0, 1.0);
+}
+
+/*struct VertexOut {
     float4 position [[position]];
     float2 texCoords;
 };
@@ -17,22 +29,9 @@ struct Uniforms {
     float2 iResolution;
     texture2d<float, access::sample> iChannel0;
     texture2d<float, access::sample> iChannel1;
-};
+};*/
 
-vertex float4 simple_vertex_function(constant float4 *vertices [[ buffer(0) ]],
-                                     uint vertex_id [[ vertex_id ]])
-{
-    // Return the input vertex unmodified
-    return vertices[vertex_id];
-}
-
-// Simple fragment shader
-fragment float4 simple_fragment_function()
-{
-    // Return a fixed color
-    return float4(1.0, 1.0, 0.0, 1.0);
-}
-
+/*
 constexpr sampler s(address::clamp_to_edge, filter::nearest);
 
 kernel void mainImage(
@@ -72,4 +71,4 @@ kernel void mainImage(
         outColor = outColor * float4(.25, .25, .25, 1.0);
     }
     outTexture.write(outColor, gid);
-}
+}*/
